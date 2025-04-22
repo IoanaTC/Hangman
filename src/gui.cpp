@@ -31,14 +31,15 @@ void GraphicalInterface::initialize_ncurses()
    curs_set(FALSE);
    start_color();
 
-   for(unsigned int i = 0; i <= COLOR_CYCLE; i++) {
-       init_pair(i, i, COLOR_BLACK);
+   for(unsigned int i = 1; i <= COLOR_CYCLE; i++) {
+       init_pair(i, i + 5, COLOR_BLACK);
    }
 }
 void GraphicalInterface::start_interface()
 {
     unsigned int color_index = 1;
-    while(1) {
+
+    for(unsigned int i = 0; i < COLOR_CYCLE; i++) {
         clear();
 
         for(int x = 0; x <= _max_x; x++) {
@@ -50,15 +51,21 @@ void GraphicalInterface::start_interface()
                 }
             }
         }
-
         refresh();
-        color_index = (color_index + 1) % COLOR_CYCLE;
+        color_index = color_index % COLOR_CYCLE + 1;
 
         usleep(DELAY);
     }
 }
 void GraphicalInterface::show_presentation_screen() {
+    clear();
 
+    mvprintw(_center_y - 1, _center_x - 15, "Ultimate Hangman game. Welcome!");
+    mvprintw(_center_y, _center_x - 16, "Disclaimer: You break it, you pay!");
+    mvprintw(_center_y + 1, _center_x - 12, "Press any key to start...");
+
+    refresh();
+    getch();
 }
 void GraphicalInterface::uninitialize_ncurses() {
     endwin();

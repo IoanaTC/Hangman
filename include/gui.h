@@ -4,7 +4,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-#define COLOR_CYCLE 7
+#define COLOR_CYCLE 3
 #define DELAY 50000
 
 // singleton

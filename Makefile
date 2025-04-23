@@ -4,7 +4,7 @@ CXX := g++
 CXXFLAGS := -Iinclude
 LOAD_LIBS := -lncurses
 
-SRC := src/main.cpp src/gui.cpp src/debug.cpp
+SRC := src/debug.cpp src/game_session.cpp src/gui.cpp src/main.cpp
 OBJ := $(SRC:.cpp=.o)
 TARGET := bin/hangman
 

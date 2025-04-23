@@ -1,6 +1,7 @@
 #include "hangman.h"
 #include "debug.h"
 #include "gui.h"
+#include "game_session.h"
 
 using namespace std;
 
@@ -19,6 +20,14 @@ int main()
     gui->start_interface();
     gui->show_presentation_screen();
     gui->uninitialize_ncurses();
+   
     /* gather user data for current game session */
+
+    GameSession * game_session = GameSession::GetInstance();
+    if(!game_session) {
+        debug_printf("Game Session could not be constructed");
+        return EC_ERROR;
+    }
+    
     return 0;
 }

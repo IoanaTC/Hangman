@@ -44,27 +44,45 @@ void GameSession::GetUserPreferences(const char * question, char (&result)[N]) {
     curs_set(0);
 }
 
-set<string> filter_words_from_buffer (const char * buffer, unsigned int size)
+set<pair<char *, unsigned int>> GameSession::filter_words_from_buffer (const char * buffer, unsigned int size)
 {
-    set<string> dictionary;
+    set<pair<char *, unsigned int>> dictionary;
 
     const char * word_start = buffer;
-    debug_printf("%s", buffer);
-
     for(unsigned int i = 0; i < size - 1; i++) {
         if(isspace(buffer[i]) && buffer[i] != '\0') {
-            if(word_start != &buffer[i] && &buffer[i] - word_start + 1 > MIN_WORD_LENGTH) {
-                string word(word_start, &buffer[i]);
-                // TODO: lowercase
-                debug_printf("word = %s", word);
-                dictionary.insert(word);
+            unsigned int word_length = &buffer[i] - word_start;
+            if(word_start != &buffer[i]
+                    && word_length > MIN_WORD_LENGTH
+                    && word_length < MAX_WORD_LENGTH) {
+
+                char * word = (char *) malloc(MAX_WORD_LENGTH);
+                memset(word, 0, MAX_WORD_LENGTH);
+                if(word) {
+                    strncpy(word, word_start, word_length);
+                    // TODO: lowercase
+                    debug_printf("word = %s", word);
+                    dictionary.insert({word, word_length + 1});
+                    this->_number_of_chosen_words += 1;
+                }
             }
             word_start = &buffer[i + 1];
+            if(dictionary.size() >= MAX_NUMBER_OF_ROUNDS) {
+                break;
+            }
         }
     }
-
     return dictionary;
 }
+
+void free_extracted_words(set<pair<char *, unsigned int>> extracted_words)
+{
+    for (auto it = extracted_words.begin(); it != extracted_words.end(); ) {
+        free(it->first);
+        it = extracted_words.erase(it);
+    }
+}
+
 bool GameSession::CreateWordsDictionary(FILE * word_file)
 {
     /* space separated words
@@ -72,7 +90,7 @@ bool GameSession::CreateWordsDictionary(FILE * word_file)
      * BUG: do not exclude special characters
      */
     
-    char * file_content = (char *)malloc(MAX_READ_SIZE);
+    char * file_content = (char *) malloc(MAX_READ_SIZE);
     if(!file_content) {
         debug_printf("No memory error upon reading file content");
         return false;
@@ -82,19 +100,54 @@ bool GameSession::CreateWordsDictionary(FILE * word_file)
     unsigned int bytes_read = fread(file_content, 1, MAX_READ_SIZE - 1, word_file);
     if(!bytes_read) {
         debug_printf("Word file could not be processed");
+        
         free(file_content);
+        file_content = nullptr;
         return false;
     }
-    debug_printf("just before get dictionary call");
-    set<string> extracted_words = filter_words_from_buffer(file_content, bytes_read);
-    for(const auto& word : extracted_words) {
-   //     debug_printf("%s", word);
-    }
+    set<pair<char *, unsigned int>> extracted_words = filter_words_from_buffer(file_content, bytes_read);
     free(file_content);
+    file_content = nullptr;
+    
+    if(!this->_number_of_chosen_words) {
+        debug_printf("Choose a better words dictionary!");
+        free_extracted_words(extracted_words);
+        return false;
+    }
+
+    /* create _words_dictionary */
+    unsigned int words_dictionary_size = (sizeof(word *) + sizeof(word) + MAX_WORD_LENGTH) * this->_number_of_chosen_words;
+    this->_words_dictionary = (word **) malloc(words_dictionary_size);
+    if(!this->_words_dictionary) {
+        debug_printf("Words Dictionary could not be created");
+
+        free_extracted_words(extracted_words);
+        return false;
+    }
+    memset(this->_words_dictionary, 0, words_dictionary_size);
+
+    pair<char *, unsigned int> current_word = * extracted_words.begin();
+    for(unsigned int round = 0; round < this->_number_of_chosen_words; round ++) {
+
+        this->_words_dictionary[round] = (word *)((char *)this->_words_dictionary 
+                + this->_number_of_chosen_words * sizeof(word *) 
+                + round * sizeof(word));
+
+        this->_words_dictionary[round]->word = (char *)((char *)this->_words_dictionary 
+                + this->_number_of_chosen_words * (sizeof(word *) + sizeof(word)) 
+                + round * MAX_WORD_LENGTH);
+
+        memcpy(((word *)this->_words_dictionary[round])->word, current_word.first, current_word.second - 1);
+        this->_words_dictionary[round]->word[current_word.second] = '\0';
+        memset(((word *)this->_words_dictionary[round])->mistakes, 0, MAX_NUMBER_MISTAKES);
+
+        current_word = *next(extracted_words.begin(), round + 1);
+    }
+    free_extracted_words(extracted_words);
     return true;
 }
 
-GameSession::GameSession() : _show_hints(false), _score(0)
+GameSession::GameSession() : _show_hints(false), _number_of_chosen_words(0), _score(0)
 {
     /* Current Game Session begins
      * the user must respond to a few questions

@@ -8,21 +8,22 @@
 using namespace std;
 
 #define MAX_WORD_LENGTH 32
-#define MAX_FILE_PATH_LENGTH 256
-#define MAX_NUMBER_OF_ROUNDS 3
+#define MIN_WORD_LENGTH 5
 
+#define MAX_FILE_PATH_LENGTH 256
 #define MAX_READ_SIZE (1 * 1024 * 1024)
 
-#define MIN_WORD_LENGTH 5
+#define MAX_NUMBER_OF_ROUNDS 3
+#define MAX_NUMBER_MISTAKES 6
+
 
 /* game session information -> word dictionary, username, score, ...
  * game match information -> current word, letters mistaken, ...
  */
 
 typedef struct _word {
-    string word;
-    unordered_multiset<char> all_letters;
-    set<char> mistakes;
+    char * word;
+    char mistakes[MAX_NUMBER_MISTAKES];
 } word;
 
 // singleton
@@ -33,6 +34,7 @@ private:
 
     FILE * _word_file;                  // ask
     word ** _words_dictionary; 
+    unsigned int _number_of_chosen_words;
 
     char ** _hint_phrases;
 
@@ -51,6 +53,7 @@ private:
     void GetUserPreferences(const char * question, char (&result)[N]);
 
     bool CreateWordsDictionary(FILE * word_file = nullptr);
+    set<pair<char *, unsigned int>> filter_words_from_buffer(const char * buffer, unsigned int size);
 
 public:
     GameSession(const GameSession &) = delete;

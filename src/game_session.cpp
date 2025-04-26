@@ -118,6 +118,7 @@ bool GameSession::CreateWordsDictionary(FILE * word_file)
     /* create _words_dictionary */
     unsigned int words_dictionary_size = (sizeof(word *) + sizeof(word) + MAX_WORD_LENGTH) * this->_number_of_chosen_words;
     this->_words_dictionary = (word **) malloc(words_dictionary_size);
+
     if(!this->_words_dictionary) {
         debug_printf("Words Dictionary could not be created");
 
@@ -139,7 +140,7 @@ bool GameSession::CreateWordsDictionary(FILE * word_file)
 
         memcpy(((word *)this->_words_dictionary[round])->word, current_word.first, current_word.second - 1);
         this->_words_dictionary[round]->word[current_word.second] = '\0';
-        memset(((word *)this->_words_dictionary[round])->mistakes, 0, MAX_NUMBER_MISTAKES);
+        this->_words_dictionary[round]->length = current_word.second - 1;
 
         current_word = *next(extracted_words.begin(), round + 1);
     }
@@ -178,21 +179,105 @@ GameSession::GameSession() : _show_hints(false), _number_of_chosen_words(0), _sc
     /* TODO: create rounds list 
      * here initialize each round woth a random word from the list
      * create hangman drawing, etc.
+     *  TRY CATCH
      */
+}
+
+void GameSession::StartGame()
+{
+    for(unsigned int i = 0; i < _number_of_chosen_words; i++) {
+        GameRound _game_round(_words_dictionary[i]);
+
+        clear();
+        _game_round.guess();        
+    }
 }
 GameSession * GameSession::GetInstance()
 {
     if(!_game_session) {
-        // TODO: catch error
-        _game_session = new GameSession();
-        if(!_game_session) {
-            debug_printf("GameSession constructor has failed");
-            return nullptr;
+        try {
+            _game_session = new GameSession();
+            if(!_game_session) {
+                debug_printf("GameSession constructor has failed");
+                return nullptr;
+            }
+        } catch (const std::exception& ex) {
+            debug_printf("GameSession Consructor error");
+            return 0;
         }
     }
     return _game_session;
 }
 GameSession::~GameSession()
 {
+    if(_words_dictionary) {
+        free(_words_dictionary);
+        _words_dictionary = nullptr;
+    }
+    if(_hint_phrases) {
+        free(_hint_phrases);
+        _hint_phrases = nullptr;
+    }
+    if(_save_score_file) {
+        fclose(_save_score_file);
+        _save_score_file = nullptr;
+    }
+}
 
+GameRound::GameRound(word * answer)
+{
+    _answer = answer;
+
+    _current_word = (char *) malloc(_answer->length);
+    if(!_current_word) {
+        debug_printf("Game Round Constructor Error");
+        throw runtime_error("Game Round Constructor error");
+    }
+    memset(_current_word, 0, _answer->length) ;
+
+    _gui_instance = GraphicalInterface::GetInstance();
+    if(!_gui_instance) {
+        debug_printf("Game Round (Interface) constructor error");
+        throw runtime_error("Game Round (Interface) constructor error");
+    }
+}
+void GameRound::guess()
+{
+    bool mistake = true;
+    char character;
+    
+    cbreak();
+    noecho();
+    while (_mistakes.size() <= MAX_NUMBER_MISTAKES) {
+        if(!strcmp(_current_word, _answer->word)) {
+            break;
+        }
+        debug_printf("%s", _current_word);
+        _gui_instance->show_round_interface(_current_word, _answer->length, _mistakes.size());
+        
+        character = (char) getch();
+        if(character < 'a' || character > 'z') {
+            continue;
+        }
+        mistake = true;
+        for(unsigned int letter = 0; letter < _answer->length; letter++) {
+            if(_answer->word[letter] == character) {
+                mistake = false;
+                _current_word[letter] = character;
+            }
+        }
+        if(mistake == true) {
+            if(!_mistakes.count(character)) {
+                _mistakes.insert(character);
+            }
+        }
+    } 
+    echo();
+}
+GameRound::~GameRound()
+{
+    if(_current_word) {
+        free(_current_word);
+        _current_word = nullptr;
+    }
 }

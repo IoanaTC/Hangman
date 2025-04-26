@@ -1,6 +1,7 @@
 #pragma once
 
 #include "debug.h"
+#include "gui.h"
 
 #include <ncurses.h>
 #include <bits/stdc++.h>
@@ -14,7 +15,7 @@ using namespace std;
 #define MAX_READ_SIZE (1 * 1024 * 1024)
 
 #define MAX_NUMBER_OF_ROUNDS 3
-#define MAX_NUMBER_MISTAKES 6
+#define MAX_NUMBER_MISTAKES 7
 
 
 /* game session information -> word dictionary, username, score, ...
@@ -23,8 +24,24 @@ using namespace std;
 
 typedef struct _word {
     char * word;
-    char mistakes[MAX_NUMBER_MISTAKES];
+    unsigned int length;
 } word;
+
+class GameRound {
+private:
+    char * _current_word; 
+    word * _answer;
+    set<char> _mistakes;
+
+    GraphicalInterface * _gui_instance;
+public:
+    GameRound()=delete;
+
+    GameRound(word * complete_word);
+    ~GameRound();
+
+    void guess();
+};
 
 // singleton
 class GameSession {
@@ -32,7 +49,6 @@ private:
     bool _show_hints;                   // ask
     char _username[MAX_WORD_LENGTH];    // ask
 
-    FILE * _word_file;                  // ask
     word ** _words_dictionary; 
     unsigned int _number_of_chosen_words;
 
@@ -40,8 +56,6 @@ private:
 
     unsigned short _score;
     FILE * _save_score_file;
-
-    //GameRound ** _game_rounds;
 
     GameSession();
     static GameSession * _game_session;
@@ -62,6 +76,7 @@ public:
     static GameSession * GetInstance();
     ~GameSession();
     
+    void StartGame();
     /* set & get */
 };
 

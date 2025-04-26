@@ -14,9 +14,13 @@ using namespace std;
 #define MAX_FILE_PATH_LENGTH 256
 #define MAX_READ_SIZE (1 * 1024 * 1024)
 
+#define MAX_STRING_SIZE 1024
+#define MAX_NUMBER_OF_HINTS 3
+
 #define MAX_NUMBER_OF_ROUNDS 3
 #define MAX_NUMBER_MISTAKES 7
 
+#define PENALTY_POINTS 10000
 
 /* game session information -> word dictionary, username, score, ...
  * game match information -> current word, letters mistaken, ...
@@ -32,6 +36,7 @@ private:
     char * _current_word; 
     word * _answer;
     set<char> _mistakes;
+    bool _result;
 
     GraphicalInterface * _gui_instance;
 public:
@@ -40,21 +45,22 @@ public:
     GameRound(word * complete_word);
     ~GameRound();
 
-    void guess();
+    void guess(unsigned int round_number);
+    bool get_result();
 };
 
 // singleton
 class GameSession {
 private:
-    bool _show_hints;                   // ask
-    char _username[MAX_WORD_LENGTH];    // ask
+    bool _show_hints;
+    char _username[MAX_WORD_LENGTH];
 
     word ** _words_dictionary; 
     unsigned int _number_of_chosen_words;
 
-    char ** _hint_phrases;
+    static char ** _hint_phrases;
 
-    unsigned short _score;
+    static unsigned short _score;
     FILE * _save_score_file;
 
     GameSession();
@@ -77,6 +83,11 @@ public:
     ~GameSession();
     
     void StartGame();
-    /* set & get */
+
+    static unsigned short GetScore();
+    static void AddScore(short value);
+
+    static void InitHints();
+    static char * GetHint(unsigned int index);
 };
 

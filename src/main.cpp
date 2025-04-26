@@ -28,5 +28,9 @@ int main()
     }
     game_session->StartGame();
     gui->uninitialize_ncurses();
+
+    delete gui;
+    delete game_session;
+
     return 0;
 }

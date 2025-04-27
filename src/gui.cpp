@@ -27,6 +27,7 @@ void GraphicalInterface::get_screen_measurements()
 void GraphicalInterface::initialize_ncurses()
 {
    initscr(); 
+   cbreak();
    noecho();
    curs_set(FALSE);
    start_color();
@@ -65,8 +66,96 @@ void GraphicalInterface::show_presentation_screen() {
     mvprintw(_center_y + 1, _center_x - 12, "Press any key to start...");
 
     refresh();
+
+    noecho();
     getch();
+    echo();
 }
 void GraphicalInterface::uninitialize_ncurses() {
     endwin();
+}
+void GraphicalInterface::show_round_interface(const char * current_word, unsigned int word_length, unsigned int number_of_mistakes)
+{
+    clear();
+
+    int word_width = word_length * 2 - 1;
+    int start_x = _center_x - word_width / 2;
+    int word_y = _center_y;
+
+    for (unsigned int letter = 0; letter < word_length; letter++) {
+        int x = start_x + letter * 2;
+
+        mvaddch(word_y + 1, x, '_');
+
+        if ((int)current_word[letter] != 0) {
+            mvaddch(word_y, x, current_word[letter]);
+        }
+    }
+    draw_hangman(number_of_mistakes);
+
+    refresh();
+}
+void GraphicalInterface::draw_hangman(unsigned int mistakes)
+{
+    int base_x = _max_x - 20;
+    int base_y = 2;
+
+    mvprintw(base_y, base_x, "+---+");
+    mvprintw(base_y + 1, base_x, "|   |");
+
+    if (mistakes >= 1)
+        mvprintw(base_y + 2, base_x + 2, "O");
+
+    if (mistakes >= 2)
+        mvprintw(base_y + 3, base_x + 2, "|");
+
+    if (mistakes >= 3)
+        mvprintw(base_y + 3, base_x + 1, "/");
+
+    if (mistakes >= 4)
+        mvprintw(base_y + 3, base_x + 3, "\\");
+
+    if (mistakes >= 5)
+        mvprintw(base_y + 4, base_x + 1, "/");
+
+    if (mistakes >= 6)
+        mvprintw(base_y + 4, base_x + 3, "\\");
+
+    if (mistakes >= 7) {
+        mvprintw(base_y + 2, base_x + 2, "X");
+    }
+}
+void GraphicalInterface::show_win_interface()
+{
+
+}
+void GraphicalInterface::show_fail_interface(unsigned int round_number, const char * word, unsigned short score, const char * hint)
+{
+    clear();
+
+    char line1[PADDING];
+    snprintf(line1, sizeof(line1),
+             "Round %u. The word: %s.", round_number, word);
+    
+    unsigned int hint_size = strlen(hint) + PADDING;
+    char line2[hint_size];
+    memset(line2, 0, hint_size);
+
+    snprintf(line2, sizeof(line2),
+             "Next Round... %s", hint);
+
+    int y1 = _max_y / 2 - 1;
+    int x1 = (_max_x - (int)strlen(line1)) / 2;
+    int y2 = _max_y / 2 + 1;
+    int x2 = (_max_x - (int)strlen(line2)) / 2;
+
+    mvprintw(y1, x1, "%s", line1);
+    mvprintw(y2, x2, "%s", line2);
+
+    char score_buf[32];
+    snprintf(score_buf, sizeof(score_buf), "Score: %u", score);
+    mvprintw(0, _max_x - (int)strlen(score_buf) - 1, "%s", score_buf);
+
+    refresh();
+    getch(); 
 }

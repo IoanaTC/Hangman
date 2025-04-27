@@ -19,15 +19,18 @@ int main()
     gui->get_screen_measurements();
     gui->start_interface();
     gui->show_presentation_screen();
-    gui->uninitialize_ncurses();
-   
-    /* gather user data for current game session */
 
+    /* gather user data for current game session */
     GameSession * game_session = GameSession::GetInstance();
     if(!game_session) {
         debug_printf("Game Session could not be constructed");
         return EC_ERROR;
     }
-    
+    game_session->StartGame();
+    gui->uninitialize_ncurses();
+
+    delete gui;
+    delete game_session;
+
     return 0;
 }

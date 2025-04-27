@@ -3,6 +3,11 @@
 #include <ncurses.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <bits/stdc++.h>
+
+using namespace std;
+
+#define PADDING 256
 
 #define COLOR_CYCLE 3
 #define DELAY 50000
@@ -26,4 +31,16 @@ public:
     void start_interface();
     void show_presentation_screen();
     void uninitialize_ncurses();
+
+    void show_round_interface(const char * current_word, 
+            unsigned int word_length, 
+            unsigned int number_of_mistakes);
+
+    void draw_hangman(unsigned int mistakes);
+    void show_win_interface();
+
+    void show_fail_interface(unsigned int round_number, 
+            const char * word,
+            unsigned short score,
+            const char * hint);
 };

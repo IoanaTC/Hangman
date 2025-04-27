@@ -7,7 +7,7 @@
 
 using namespace std;
 
-#define PADDING 256
+#define GENERAL_MAX_SIZE 2048
 
 #define COLOR_CYCLE 3
 #define DELAY 50000
@@ -30,6 +30,7 @@ public:
     void initialize_ncurses();
     void start_interface();
     void show_presentation_screen();
+    void show_instructions_screen();
     void uninitialize_ncurses();
 
     void show_round_interface(const char * current_word, 
@@ -37,7 +38,10 @@ public:
             unsigned int number_of_mistakes);
 
     void draw_hangman(unsigned int mistakes);
-    void show_win_interface();
+
+    void show_win_interface(unsigned int round_number,
+            const char * word,
+            unsigned short score);
 
     void show_fail_interface(unsigned int round_number, 
             const char * word,

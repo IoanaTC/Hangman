@@ -71,6 +71,23 @@ void GraphicalInterface::show_presentation_screen() {
     getch();
     echo();
 }
+void GraphicalInterface::show_instructions_screen()
+{
+    clear();
+    int start_x, start_y;
+
+    start_y = _center_y - 2;
+    start_x = _center_x - 30;
+
+    mvprintw(start_y,     start_x, "1. You will play 3 rounds, each with a new word to guess.");
+    mvprintw(start_y + 2, start_x, "2. For every correct guess, you earn 1000 points.");
+    mvprintw(start_y + 4, start_x, "3. If you fail to guess the word, 1000 points will be deducted.");
+
+    mvprintw(start_y + 6, _center_x - 5, "Good luck!");
+
+    refresh();
+    getch();
+}
 void GraphicalInterface::uninitialize_ncurses() {
     endwin();
 }
@@ -125,36 +142,65 @@ void GraphicalInterface::draw_hangman(unsigned int mistakes)
         mvprintw(base_y + 2, base_x + 2, "X");
     }
 }
-void GraphicalInterface::show_win_interface()
-{
-
-}
-void GraphicalInterface::show_fail_interface(unsigned int round_number, const char * word, unsigned short score, const char * hint)
+void GraphicalInterface::show_win_interface(unsigned int round_number, 
+        const char * word, 
+        unsigned short score)
 {
     clear();
+    
+    int x1, x2, y1, y2;
+    char score_buf[GENERAL_MAX_SIZE], line1[GENERAL_MAX_SIZE];
 
-    char line1[PADDING];
+    snprintf(score_buf, sizeof(score_buf), "Score: %u", score);
+    mvprintw(0, _max_x - (int) strlen(score_buf) - 1, "%s", score_buf);
+
+    snprintf(line1, sizeof(line1),
+             "Round %u. The word is %s.", round_number, word);
+    y1 = _max_y / 2 - 1;
+    x1 = (_max_x - (int) strlen(line1)) / 2;
+    mvprintw(y1, x1, "%s", line1);
+
+    const char* line2 = "Congrats!";
+    y2 = y1 + 2;
+    x2 = (_max_x - (int) strlen(line2)) / 2;
+    mvprintw(y2, x2, "%s", line2);
+
+    refresh();
+    getch();
+}
+void GraphicalInterface::show_fail_interface(unsigned int round_number, 
+        const char * word, 
+        unsigned short score, 
+        const char * hint)
+{
+    clear();
+    
+    int x1, x2, y1, y2;
+    char line1[GENERAL_MAX_SIZE], line2[GENERAL_MAX_SIZE];
+
     snprintf(line1, sizeof(line1),
              "Round %u. The word: %s.", round_number, word);
     
-    unsigned int hint_size = strlen(hint) + PADDING;
-    char line2[hint_size];
-    memset(line2, 0, hint_size);
+    if(hint) {
+        memset(&line2, 0, GENERAL_MAX_SIZE);
+        snprintf(line2, sizeof(line2),
+                 "Next Round... %s", hint);
+        y2 = _max_y / 2 + 1;
+        x2 = (_max_x - (int) strlen(line2)) / 2;
+    }
 
-    snprintf(line2, sizeof(line2),
-             "Next Round... %s", hint);
-
-    int y1 = _max_y / 2 - 1;
-    int x1 = (_max_x - (int)strlen(line1)) / 2;
-    int y2 = _max_y / 2 + 1;
-    int x2 = (_max_x - (int)strlen(line2)) / 2;
+    y1 = _max_y / 2 - 1;
+    x1 = (_max_x - (int) strlen(line1)) / 2;
 
     mvprintw(y1, x1, "%s", line1);
-    mvprintw(y2, x2, "%s", line2);
 
-    char score_buf[32];
+    if(hint) {
+        mvprintw(y2, x2, "%s", line2);
+    }
+
+    char score_buf[GENERAL_MAX_SIZE];
     snprintf(score_buf, sizeof(score_buf), "Score: %u", score);
-    mvprintw(0, _max_x - (int)strlen(score_buf) - 1, "%s", score_buf);
+    mvprintw(0, _max_x - (int) strlen(score_buf) - 1, "%s", score_buf);
 
     refresh();
     getch(); 

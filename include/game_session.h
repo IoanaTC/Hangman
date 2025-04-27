@@ -5,6 +5,7 @@
 
 #include <ncurses.h>
 #include <bits/stdc++.h>
+#include <dlfcn.h>
 
 using namespace std;
 
@@ -38,11 +39,13 @@ private:
     set<char> _mistakes;
     bool _result;
 
+    bool _show_hints;
+
     GraphicalInterface * _gui_instance;
 public:
     GameRound()=delete;
 
-    GameRound(word * complete_word);
+    GameRound(word * complete_word, bool show_hints = true);
     ~GameRound();
 
     void guess(unsigned int round_number);
@@ -89,5 +92,7 @@ public:
 
     static void InitHints();
     static char * GetHint(unsigned int index);
+
+    void play_winning_sound();
 };
 

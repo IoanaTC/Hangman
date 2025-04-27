@@ -166,11 +166,11 @@ void GameSession::InitHints()
             + i * MAX_STRING_SIZE;
     }
 
-    strncpy(_hint_phrases[0], "Keep going—you’re doing great! Every guess brings you one step closer.", MAX_STRING_SIZE - 1);
+    strncpy(_hint_phrases[0], "Keep going! You are doing great! Every guess brings you one step closer.", MAX_STRING_SIZE - 1);
     _hint_phrases[0][MAX_STRING_SIZE - 1] = '\0';
-    strncpy(_hint_phrases[1], "Don’t give up now! You’ve already uncovered some letters—trust your instincts.", MAX_STRING_SIZE - 1);
+    strncpy(_hint_phrases[1], "Do not give up now! You haveve already uncovered some letters! Trust your instincts.", MAX_STRING_SIZE - 1);
     _hint_phrases[1][MAX_STRING_SIZE - 1] = '\0';
-    strncpy(_hint_phrases[2], "Great work so far—keep up the momentum and crack this word!", MAX_STRING_SIZE - 1);
+    strncpy(_hint_phrases[2], "Great work so far! Keep up the momentum and crack this word!", MAX_STRING_SIZE - 1);
     _hint_phrases[2][MAX_STRING_SIZE - 1] = '\0';
 
     debug_printf("%s", _hint_phrases[0]);
@@ -189,6 +189,7 @@ GameSession::GameSession() : _show_hints(false), _number_of_chosen_words(0)
     GetUserPreferences("Do you want any hints? (yes / no) : ", this->_show_hints);
 
     if(!this->_show_hints) {
+        debug_printf("free hints: %x", this->_show_hints);
         free(_hint_phrases);
     }
 
@@ -206,24 +207,25 @@ GameSession::GameSession() : _show_hints(false), _number_of_chosen_words(0)
         }
         throw runtime_error("Word Dictionary file could not pe processed");
     }
+    GetUserPreferences("Please provide file path for your final result : ", _filename);
+    FILE * _save_score_file = fopen(_filename, "w+");
+    if(!_save_score_file) {
+        debug_printf("Could not open score file");
+    }
     /* TODO: get score file name  and open it*/
-
     if(f) fclose(f);    
 }
 
 void GameSession::StartGame()
 {
     for(unsigned int i = 0; i < _number_of_chosen_words; i++) {
-        GameRound _game_round(_words_dictionary[i]);
+        GameRound _game_round(_words_dictionary[i], this->_show_hints);
 
         clear();
         _game_round.guess(i);        
 
         if(_game_round.get_result()) {
-            GameSession::AddScore((short)PENALTY_POINTS);
-            /* load so */
-        } else {
-            GameSession::AddScore((short) - PENALTY_POINTS);
+            play_winning_sound();
         }
     }
 }
@@ -258,8 +260,27 @@ GameSession::~GameSession()
         _save_score_file = nullptr;
     }
 }
+void GameSession::play_winning_sound()
+{
+    void * file_handle = dlopen("./winning_sound.so", RTLD_NOW);
+    dlerror();
+    if(!file_handle) {
+        debug_printf("Play winning sound, could not open .si");
+        return;
+    }
+    typedef void (* play_function)();
+    play_function function = (play_function) dlsym(file_handle, "play_winning_sound");
+    if(!function || dlerror()) {
+        debug_printf("Play winning sound, could not find symbol");
+        dlclose(file_handle);
+        return;
+    }
+    debug_printf("play funciton");
+    function();
+    dlclose(file_handle);
+}
 
-GameRound::GameRound(word * answer) : _result(false)
+GameRound::GameRound(word * answer, bool show_hints) : _result(false)
 {
     _answer = answer;
 
@@ -275,6 +296,7 @@ GameRound::GameRound(word * answer) : _result(false)
         debug_printf("Game Round (Interface) constructor error");
         throw runtime_error("Game Round (Interface) constructor error");
     }
+    this->_show_hints = show_hints;
 }
 void GameRound::guess(unsigned int round_number)
 {
@@ -286,16 +308,23 @@ void GameRound::guess(unsigned int round_number)
     while (_mistakes.size() <= MAX_NUMBER_MISTAKES) {
         if(!strcmp(_current_word, _answer->word)) {
             _result = true;
-            // TODO x 2
-            _gui_instance->show_win_interface(); // display partial score
-            break;
+
+            GameSession::AddScore((short)PENALTY_POINTS);
+            _gui_instance->show_win_interface(round_number,
+                    (char *)_answer->word,
+                    GameSession::GetScore());
+            echo();
+            return;
         }
-        debug_printf("%s", _current_word);
         _gui_instance->show_round_interface(_current_word, _answer->length, _mistakes.size());
         
         character = (char) getch();
         if(character < 'a' || character > 'z') {
             continue;
+        }
+
+        if(_mistakes.size() >= MAX_NUMBER_MISTAKES) {
+            break;
         }
         mistake = true;
         for(unsigned int letter = 0; letter < _answer->length; letter++) {
@@ -310,11 +339,11 @@ void GameRound::guess(unsigned int round_number)
             }
         }
     }
+    GameSession::AddScore((short) - PENALTY_POINTS);
     _gui_instance->show_fail_interface(round_number,
             (char *)_answer->word,
             GameSession::GetScore(), 
-            (char *)GameSession::GetHint(round_number));
-
+            this->_show_hints == true ? (char *)GameSession::GetHint(round_number) : nullptr);
     echo();
 }
 bool GameRound::get_result()

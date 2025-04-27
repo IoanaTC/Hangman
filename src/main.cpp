@@ -19,6 +19,7 @@ int main()
     gui->get_screen_measurements();
     gui->start_interface();
     gui->show_presentation_screen();
+    gui->show_instructions_screen();
 
     /* gather user data for current game session */
     GameSession * game_session = GameSession::GetInstance();

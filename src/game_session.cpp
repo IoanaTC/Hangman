@@ -185,13 +185,14 @@ GameSession::GameSession() : _show_hints(false), _number_of_chosen_words(0)
 {
     InitHints();
 
-    GetUserPreferences("What is your username? : ", this->_username);
     GetUserPreferences("Do you want any hints? (yes / no) : ", this->_show_hints);
 
     if(!this->_show_hints) {
         debug_printf("free hints: %x", this->_show_hints);
         free(_hint_phrases);
     }
+    GetUserPreferences("What is your username? : ", this->_username);
+    debug_printf("show hints becomes: %x", this->_show_hints);
 
     char _filename[MAX_FILE_PATH_LENGTH];
     memset(_filename, 0, MAX_FILE_PATH_LENGTH);
@@ -201,10 +202,6 @@ GameSession::GameSession() : _show_hints(false), _number_of_chosen_words(0)
     if(!f || !CreateWordsDictionary(f)) {
         debug_printf("Word Dictionary file could not pe processed");
         if(f) fclose(f);
-        if(_hint_phrases) {
-            free(_hint_phrases);
-            _hint_phrases = nullptr;
-        }
         throw runtime_error("Word Dictionary file could not pe processed");
     }
     GetUserPreferences("Please provide file path for your final result : ", _filename);
@@ -260,7 +257,7 @@ GameSession * GameSession::GetInstance()
             }
         } catch (const std::exception& ex) {
             debug_printf("GameSession Consructor error");
-            return 0;
+            return nullptr;
         }
     }
     return _game_session;
@@ -271,7 +268,7 @@ GameSession::~GameSession()
         free(_words_dictionary);
         _words_dictionary = nullptr;
     }
-    if(_hint_phrases) {
+    if(this->_show_hints && _hint_phrases) {
         free(_hint_phrases);
         _hint_phrases = nullptr;
     }
@@ -283,7 +280,7 @@ GameSession::~GameSession()
 void GameSession::play_winning_sound()
 {
     noecho();
-    void * file_handle = dlopen("./winning_sound.so", RTLD_NOW);
+    void * file_handle = dlopen("winning_sound.so", RTLD_NOW);
     dlerror();
     if(!file_handle) {
         debug_printf("Play winning sound, could not open .si");
@@ -365,7 +362,7 @@ void GameRound::guess(unsigned int round_number)
     _gui_instance->show_fail_interface(round_number,
             (char *)_answer->word,
             GameSession::GetScore(), 
-            this->_show_hints == true ? (char *)GameSession::GetHint(round_number) : nullptr);
+            this->_show_hints != 0 ? (char *)GameSession::GetHint(round_number) : nullptr);
     echo();
 }
 bool GameRound::get_result()

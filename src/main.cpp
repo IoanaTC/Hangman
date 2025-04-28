@@ -12,7 +12,7 @@ int main()
     GraphicalInterface * gui = GraphicalInterface::GetInstance();
     if(!gui) {
         debug_printf("Graphical Interface could not be constructed");
-        return EC_ERROR;
+        return ERROR;
     }
     gui->initialize_ncurses();
     gui->get_screen_measurements();
@@ -23,7 +23,11 @@ int main()
     GameSession * game_session = GameSession::GetInstance();
     if(!game_session) {
         debug_printf("Game Session could not be constructed");
-        return EC_ERROR;
+
+        gui->uninitialize_ncurses();
+        delete gui;
+
+        return ERROR;
     }
     game_session->StartGame();
 
@@ -36,5 +40,5 @@ int main()
     delete gui;
     delete game_session;
 
-    return 0;
+    return SUCCESS;
 }

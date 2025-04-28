@@ -55,8 +55,8 @@ public:
 // singleton
 class GameSession {
 private:
-    bool _show_hints;
     char _username[MAX_WORD_LENGTH];
+    bool _show_hints;
 
     word ** _words_dictionary; 
     unsigned int _number_of_chosen_words;

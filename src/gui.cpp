@@ -201,7 +201,7 @@ void GraphicalInterface::show_fail_interface(unsigned int round_number,
     char line1[GENERAL_MAX_SIZE], line2[GENERAL_MAX_SIZE];
 
     snprintf(line1, sizeof(line1),
-             "Round %u. The word: %s.", round_number, word);
+             "Round %u. The word: ", round_number);
     
     if(hint) {
         memset(&line2, 0, GENERAL_MAX_SIZE);
@@ -215,6 +215,7 @@ void GraphicalInterface::show_fail_interface(unsigned int round_number,
     x1 = (_max_x - (int) strlen(line1)) / 2;
 
     mvprintw(y1, x1, "%s", line1);
+    mvprintw(y1, x1 + strlen(line1), word);
 
     if(hint) {
         mvprintw(y2, x2, "%s", line2);

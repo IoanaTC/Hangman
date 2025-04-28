@@ -1,3 +1,4 @@
 #pragma once
 
-#define EC_ERROR -1
+#define ERROR -1
+#define SUCCESS 0

@@ -1,12 +1,12 @@
 # Makefile for vulnerable hangman game
 
 CXX := g++
-CXXFLAGS := -Iinclude
+CXXFLAGS := -Iinclude -Wl,-rpath,'$$ORIGIN'
 LOAD_LIBS := -lncurses
 
 SRC := src/debug.cpp src/game_session.cpp src/gui.cpp src/main.cpp
 OBJ := $(SRC:.cpp=.o)
-TARGET := bin/hangman
+TARGET := hangman
 PLUGIN := winning_sound.so
 
 WIN_SOUND_FILE := win_sound.wav
@@ -23,14 +23,10 @@ endif
 all: $(PLUGIN) $(TARGET)
 
 $(TARGET): $(OBJ)
-	@mkdir -p bin
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LOAD_LIBS)
 
 $(PLUGIN): winning_sound.cpp
 	g++ -shared -fPIC -o $@ $< -lsndfile -lao
-
-copy_win_sound:
-	@cp $(WIN_SOUND_FILE) bin/
 
 %.o : %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@

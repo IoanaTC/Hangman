@@ -54,8 +54,11 @@ void GraphicalInterface::start_interface()
         }
         refresh();
         color_index = color_index % COLOR_CYCLE + 1;
-
-        usleep(DELAY);
+        
+        struct timespec req;
+        req.tv_sec = DELAY;
+        req.tv_nsec = 0;
+        nanosleep(&req, NULL);
     }
 }
 void GraphicalInterface::show_presentation_screen() {

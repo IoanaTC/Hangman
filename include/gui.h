@@ -10,7 +10,7 @@ using namespace std;
 #define GENERAL_MAX_SIZE 2048
 
 #define COLOR_CYCLE 3
-#define DELAY 90000
+#define DELAY 1
 
 // singleton
 class GraphicalInterface {

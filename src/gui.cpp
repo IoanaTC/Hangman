@@ -11,7 +11,6 @@ GraphicalInterface * GraphicalInterface::GetInstance()
     if(!_gui_instance) {
         _gui_instance = new GraphicalInterface();
         if(!_gui_instance) {
-            // constructor failed
             return nullptr;
         }
     }

@@ -63,7 +63,6 @@ set<pair<char *, unsigned int>> GameSession::filter_words_from_buffer (const cha
                 if(word) {
                     strncpy(word, word_start, word_length);
 
-                    debug_printf("word = %s", word);
                     dictionary.insert({word, word_length + 1});
                     this->_number_of_chosen_words += 1;
                 }
@@ -172,10 +171,6 @@ void GameSession::InitHints()
     _hint_phrases[1][MAX_STRING_SIZE - 1] = '\0';
     strncpy(_hint_phrases[2], "Great work so far! Keep up the momentum and crack this word!", MAX_STRING_SIZE - 1);
     _hint_phrases[2][MAX_STRING_SIZE - 1] = '\0';
-
-    debug_printf("%s", _hint_phrases[0]);
-    debug_printf("%s", _hint_phrases[1]);
-    debug_printf("%s", _hint_phrases[2]);
 }
 char * GameSession::GetHint(unsigned int index)
 {
@@ -188,12 +183,9 @@ GameSession::GameSession() : _show_hints(false), _number_of_chosen_words(0)
     GetUserPreferences("Do you want any hints? (yes / no) : ", this->_show_hints);
 
     if(!this->_show_hints) {
-        debug_printf("free hints: %x", this->_show_hints);
         free(_hint_phrases);
     }
     GetUserPreferences("What is your username? : ", this->_username);
-    debug_printf("show hints becomes: %x", this->_show_hints);
-
     char _filename[MAX_FILE_PATH_LENGTH];
     memset(_filename, 0, MAX_FILE_PATH_LENGTH);
 
@@ -205,8 +197,6 @@ GameSession::GameSession() : _show_hints(false), _number_of_chosen_words(0)
         throw runtime_error("Word Dictionary file could not pe processed");
     }
     GetUserPreferences("Please provide file path for your final result : ", _save_score_file);
-    debug_printf("%s", _save_score_file);
-
     if (access(_save_score_file, F_OK) != 0) {
         FILE* f = fopen(_save_score_file, "w+");
         if (f) fclose(f);
@@ -230,7 +220,6 @@ void GameSession::save_score_file()
 
     FILE* f = fopen(_save_score_file, "w");
     if (!f) {
-        debug_printf("Could not open for writing: %s", _save_score_file);
         return;
     }
 
@@ -288,17 +277,14 @@ void GameSession::play_winning_sound()
     void * file_handle = dlopen("winning_sound.so", RTLD_NOW);
     dlerror();
     if(!file_handle) {
-        debug_printf("Play winning sound, could not open .si");
         return;
     }
     typedef void (* play_function)();
     play_function function = (play_function) dlsym(file_handle, "play_winning_sound");
     if(!function || dlerror()) {
-        debug_printf("Play winning sound, could not find symbol");
         dlclose(file_handle);
         return;
     }
-    debug_printf("play funciton");
     function();
     dlclose(file_handle);
     echo();

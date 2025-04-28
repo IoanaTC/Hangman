@@ -4,7 +4,6 @@
 
 #define DEBUG_FILE "debug.log"
 
-// singleton
 class DEBUG {
 private:
     DEBUG();

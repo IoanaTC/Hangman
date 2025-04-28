@@ -12,7 +12,6 @@ using namespace std;
 #define COLOR_CYCLE 3
 #define DELAY 1
 
-// singleton
 class GraphicalInterface {
 private:
     GraphicalInterface();

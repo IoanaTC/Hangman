@@ -23,10 +23,6 @@ using namespace std;
 
 #define PENALTY_POINTS 10000
 
-/* game session information -> word dictionary, username, score, ...
- * game match information -> current word, letters mistaken, ...
- */
-
 typedef struct _word {
     char * word;
     unsigned int length;
@@ -52,7 +48,6 @@ public:
     bool get_result();
 };
 
-// singleton
 class GameSession {
 private:
     char _username[MAX_WORD_LENGTH];

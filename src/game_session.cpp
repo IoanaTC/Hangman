@@ -204,12 +204,18 @@ GameSession::GameSession() : _show_hints(false), _number_of_chosen_words(0)
         if(f) fclose(f);
         throw runtime_error("Word Dictionary file could not pe processed");
     }
-    GetUserPreferences("Please provide file path for your final result : ", _filename);
-    _save_score_file = fopen(_filename, "w+");
-    if(!_save_score_file) {
-        debug_printf("Could not open score file");
+    GetUserPreferences("Please provide file path for your final result : ", _save_score_file);
+    debug_printf("%s", _save_score_file);
+
+    if (access(_save_score_file, F_OK) != 0) {
+        FILE* f = fopen(_save_score_file, "w+");
+        if (f) fclose(f);
+        else throw std::runtime_error("Could not create score file");
+    } else {
+        if (access(_save_score_file, W_OK) != 0) {
+            throw std::runtime_error("Score file not writable");
+        }
     }
-    if(f) fclose(f);    
 }
 void GameSession::save_score_file()
 {
@@ -222,11 +228,14 @@ void GameSession::save_score_file()
             _username,
             _score);
 
-    if(_save_score_file) {
-        fputs(buffer, _save_score_file);
-        fclose(_save_score_file);
-        _save_score_file = nullptr;
+    FILE* f = fopen(_save_score_file, "w");
+    if (!f) {
+        debug_printf("Could not open for writing: %s", _save_score_file);
+        return;
     }
+
+    fputs(buffer, f);
+    fclose(f);
 }
 char * GameSession::get_username()
 {
@@ -271,10 +280,6 @@ GameSession::~GameSession()
     if(this->_show_hints && _hint_phrases) {
         free(_hint_phrases);
         _hint_phrases = nullptr;
-    }
-    if(_save_score_file) {
-        fclose(_save_score_file);
-        _save_score_file = nullptr;
     }
 }
 void GameSession::play_winning_sound()

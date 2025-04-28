@@ -64,7 +64,7 @@ private:
     static char ** _hint_phrases;
 
     static unsigned short _score;
-    FILE * _save_score_file;
+    char _save_score_file[MAX_FILE_PATH_LENGTH];
 
     GameSession();
     static GameSession * _game_session;

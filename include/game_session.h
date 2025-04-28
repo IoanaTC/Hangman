@@ -86,6 +86,9 @@ public:
     ~GameSession();
     
     void StartGame();
+    void save_score_file();
+    
+    char * get_username();
 
     static unsigned short GetScore();
     static void AddScore(short value);

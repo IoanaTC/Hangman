@@ -208,14 +208,33 @@ GameSession::GameSession() : _show_hints(false), _number_of_chosen_words(0)
         throw runtime_error("Word Dictionary file could not pe processed");
     }
     GetUserPreferences("Please provide file path for your final result : ", _filename);
-    FILE * _save_score_file = fopen(_filename, "w+");
+    _save_score_file = fopen(_filename, "w+");
     if(!_save_score_file) {
         debug_printf("Could not open score file");
     }
-    /* TODO: get score file name  and open it*/
     if(f) fclose(f);    
 }
+void GameSession::save_score_file()
+{
+    char buffer[MAX_READ_SIZE];
+    memset(&buffer, 0, MAX_READ_SIZE);
 
+    snprintf(buffer, MAX_READ_SIZE,
+            "Congrats! %s\n"
+            "Score: %u\n",
+            _username,
+            _score);
+
+    if(_save_score_file) {
+        fputs(buffer, _save_score_file);
+        fclose(_save_score_file);
+        _save_score_file = nullptr;
+    }
+}
+char * GameSession::get_username()
+{
+    return _username;
+}
 void GameSession::StartGame()
 {
     for(unsigned int i = 0; i < _number_of_chosen_words; i++) {
@@ -226,6 +245,7 @@ void GameSession::StartGame()
 
         if(_game_round.get_result()) {
             play_winning_sound();
+            getch();
         }
     }
 }
@@ -262,6 +282,7 @@ GameSession::~GameSession()
 }
 void GameSession::play_winning_sound()
 {
+    noecho();
     void * file_handle = dlopen("./winning_sound.so", RTLD_NOW);
     dlerror();
     if(!file_handle) {
@@ -278,6 +299,7 @@ void GameSession::play_winning_sound()
     debug_printf("play funciton");
     function();
     dlclose(file_handle);
+    echo();
 }
 
 GameRound::GameRound(word * answer, bool show_hints) : _result(false)

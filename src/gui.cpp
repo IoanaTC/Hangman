@@ -82,11 +82,31 @@ void GraphicalInterface::show_instructions_screen()
     mvprintw(start_y,     start_x, "1. You will play 3 rounds, each with a new word to guess.");
     mvprintw(start_y + 2, start_x, "2. For every correct guess, you earn 1000 points.");
     mvprintw(start_y + 4, start_x, "3. If you fail to guess the word, 1000 points will be deducted.");
+    mvprintw(start_y + 6, start_x, "* Please make sure you have speakers'volume turned on:).");
 
-    mvprintw(start_y + 6, _center_x - 5, "Good luck!");
+    mvprintw(start_y + 8, _center_x - 5, "Good luck!");
 
     refresh();
     getch();
+}
+void GraphicalInterface::show_end_screen(unsigned short score,
+        const char * username)
+{
+    clear();
+    int start_x, start_y;
+
+    start_y = _center_y - 2;
+    start_x = _center_x - 30;
+
+    mvprintw(start_y,     start_x, "Congrats! %s", username);
+    mvprintw(start_y + 2, start_x, "This is your score: %u", score);
+    mvprintw(start_y + 6, _center_x - 5, "Better luck next time!");
+
+    refresh();
+
+    noecho();
+    getch();
+    echo();
 }
 void GraphicalInterface::uninitialize_ncurses() {
     endwin();
@@ -166,7 +186,6 @@ void GraphicalInterface::show_win_interface(unsigned int round_number,
     mvprintw(y2, x2, "%s", line2);
 
     refresh();
-    getch();
 }
 void GraphicalInterface::show_fail_interface(unsigned int round_number, 
         const char * word, 

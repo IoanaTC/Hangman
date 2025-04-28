@@ -10,7 +10,7 @@ using namespace std;
 #define GENERAL_MAX_SIZE 2048
 
 #define COLOR_CYCLE 3
-#define DELAY 50000
+#define DELAY 90000
 
 // singleton
 class GraphicalInterface {
@@ -31,6 +31,8 @@ public:
     void start_interface();
     void show_presentation_screen();
     void show_instructions_screen();
+    void show_end_screen(unsigned short score,
+            const char * username);
     void uninitialize_ncurses();
 
     void show_round_interface(const char * current_word, 

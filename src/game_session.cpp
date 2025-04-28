@@ -343,7 +343,8 @@ void GameRound::guess(unsigned int round_number)
         _gui_instance->show_round_interface(_current_word, _answer->length, _mistakes.size());
         
         character = (char) getch();
-        if(character < 'a' || character > 'z') {
+        if ((character < 'a' || character > 'z') &&
+            (character < 'A' || character > 'Z')) {
             continue;
         }
 

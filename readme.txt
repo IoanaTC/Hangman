@@ -5,7 +5,7 @@ A classic Hangman word-guessing game implemented in C++ with a simple ncurses-ba
 GAME INTRODUCTION
 -----------------
 Guess the hidden word one letter at a time.
-• You get up to 6 mistakes before the hangman is complete.
+• You get up to 7 mistakes before the hangman is complete.
 • Correct guesses reveal letters in place; wrong guesses add to the hangman drawing.
 • Earn 1000 points for each word you guess correctly; lose 1000 points if you fail.
 
